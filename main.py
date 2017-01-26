@@ -14,77 +14,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# html boilerplate for the top of every page
-page_header = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Caesar</title>
-</head>
-<body>
-    <h1>Caesar</h1>
-"""
-
-# html boilerplate for the bottom of every page
-page_footer = """
-</body>
-</html>
-"""
+#
+# # html boilerplate for the top of every page
+# page_header = """
+# <!DOCTYPE html>
+# <html>
+# <head>
+#     <title>Caesar</title>
+# </head>
+# <body>
+#     <h1>Caesar</h1>
+# """
+#
+# # html boilerplate for the bottom of every page
+# page_footer = """
+# </body>
+# </html>
+# """
 
 
 import webapp2
 import caesar
+import cgi
+
+def build_page(textarea_content):
+    rot_label = "<label>Rotate by: </label>"
+    rot_number = "<input name ='rot' type='number'/>'"
+
+    message_label = "<label>Type a message: </label>"
+    textarea = "<textarea  name='message'>" + textarea_content + "</textarea>"
+
+    submit= "<input type='submit'/>"
+    form = ("<form method='post'>" +
+            rot_label + rot_number + "<br>" +
+            message_label + textarea + "<br>"+
+            submit + "</form>")
+
+    header = "<h2>Web Caeser</h2>"
+    return header + form
+
 
 class MainHandler(webapp2.RequestHandler):
     """ Handles requests coming in to '/' (the root of our site)
         e.g. www.web-caesar.com/"""
 
     def get(self):
-        edit_header = "<h3>Encrypt your code here</h3>"
-
-        #add a form for user to enter message and roate number
-        add_form = """
-        <form action="/encrypt" method='get'>
-            <p>
-            <label>
-                Message to be encrypted:
-                <br>
-                <textarea name="en_text" rows="10" cols="30">Type message here</textarea>
-            </label>
-            </p>
-            </p>
-            <label>
-            <br>
-                Enter rotation number
-                <input type="text" name="rot" />
-            </label>
-            <p>
-            <input type="submit" value="Encrypt"/>
-        </form>"""
-        message= "Helloooooo world!"
-        # encrypted_message = caesar.encrypt(message, 13)
-        content = page_header + add_form + page_footer
+        content = build_page("")
         self.response.write(content)
-    # def post(self):
-    #     self.response.write(content)
 
-class Encrypted_Text(webapp2.RequestHandler):
     def post(self):
-        message= self.request.get("en_text")
-        rot= self.request.get("rot")
+        message = self.request.get("message")
+        rot = int(self.request.get("rot"))
         encrypted_message = caesar.encrypt(message, rot)
-
-        new_message = "<h1>Your encrypted message is: " + encrypted_message + "</h1>"
-
-        content = page_header + "<p>" + new_message + "</p>" + page_footer
+        escaped_message = cgi.escape(encrypted_message)
+        content = build_page(escaped_message)
         self.response.write(content)
-
-
-
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    (/encrypt, Encrypted_Text)
+
 
 ], debug=True)
